@@ -1,53 +1,113 @@
 #include <stdio.h>
 
-
-
 int main() {
+    // Variáveis de configuração
+    int TAMANHO_TABULEIRO = 10;
+    int TAMANHO_NAVIO = 3;
+    int AGUA = 0;
+    int NAVIO = 3;
 
-    //Declara a matriz 10x10 para
     int tabuleiro[10][10];
     int linha, coluna;
 
-    // 1 Representação do tabuleiro 
-    for (linha = 0; linha < 10; linha++){
-        for (coluna = 0; coluna < 10; coluna++)
-        tabuleiro[linha][coluna]=0;
-    }
-
-    //2. Posicionamento dos navios
-    //Navio 1
-    int navioH_linha = 2;
-    int navioH_coluna_inicial = 3;
-    if (navioH_coluna_inicial + 3 <=10){
-        for (coluna = navioH_coluna_inicial; coluna < navioH_coluna_inicial + 3; coluna++){
-            tabuleiro[navioH_linha][coluna] = 3;
+    // --- 1. Inicialize o Tabuleiro: Preenchendo com água ---
+    printf("Inicializando o tabuleiro...\n");
+    for (linha = 0; linha < TAMANHO_TABULEIRO; linha++) {
+        for (coluna = 0; coluna < TAMANHO_TABULEIRO; coluna++) {
+            tabuleiro[linha][coluna] = AGUA;
         }
     }
 
-    //Navio 2
-    int navioV_coluna = 7;
-    int navioV_linha_inicial = 5;
-    if( navioV_linha_inicial + 3 <=10){
-        for (linha = navioV_linha_inicial; linha < navioV_linha_inicial + 3; linha++){
-            if(tabuleiro[linha][navioV_coluna] == 3){
+    // --- 2. Posicione Quatro Navios (tamanho 3) ---
+    printf("Posicionando os navios...\n");
+
+    // --- Navio 1: Horizontal ---
+    int navio1_linha = 1;
+    int navio1_coluna_inicial = 1;
+    int espaco_livre = 1; // 1 para 'true', 0 para 'false'
+
+    if (navio1_coluna_inicial + TAMANHO_NAVIO <= TAMANHO_TABULEIRO) {
+        for (int i = 0; i < TAMANHO_NAVIO; i++) {
+            if (tabuleiro[navio1_linha][navio1_coluna_inicial + i] != AGUA) {
+                espaco_livre = 0;
                 break;
             }
-            tabuleiro[linha][navioV_coluna] = 3;
+        }
+        if (espaco_livre) {
+            for (int i = 0; i < TAMANHO_NAVIO; i++) {
+                tabuleiro[navio1_linha][navio1_coluna_inicial + i] = NAVIO;
+            }
         }
     }
 
-    //Exibindo o tabuleiro
+    // --- Navio 2: Vertical ---
+    int navio2_linha_inicial = 3;
+    int navio2_coluna = 8;
+    espaco_livre = 1;
 
-    printf("Tabuleiro Batalha Naval\n");
-    printf("   A B C D E F G H I J\n");
+    if (navio2_linha_inicial + TAMANHO_NAVIO <= TAMANHO_TABULEIRO) {
+        for (int i = 0; i < TAMANHO_NAVIO; i++) {
+            if (tabuleiro[navio2_linha_inicial + i][navio2_coluna] != AGUA) {
+                espaco_livre = 0;
+                break;
+            }
+        }
+        if (espaco_livre) {
+            for (int i = 0; i < TAMANHO_NAVIO; i++) {
+                tabuleiro[navio2_linha_inicial + i][navio2_coluna] = NAVIO;
+            }
+        }
+    }
 
-    for (linha = 0; linha < 10; linha++){
-        printf("%2d ", linha + 1);
+    // --- Navio 3: Diagonal (linha e coluna aumentam) ---
+    int navio3_linha_inicial = 4;
+    int navio3_coluna_inicial = 1;
+    espaco_livre = 1;
 
-        for (coluna = 0; coluna < 10; coluna++){
+    if (navio3_linha_inicial + TAMANHO_NAVIO <= TAMANHO_TABULEIRO && navio3_coluna_inicial + TAMANHO_NAVIO <= TAMANHO_TABULEIRO) {
+        for (int i = 0; i < TAMANHO_NAVIO; i++) {
+            if (tabuleiro[navio3_linha_inicial + i][navio3_coluna_inicial + i] != AGUA) {
+                espaco_livre = 0;
+                break;
+            }
+        }
+        if (espaco_livre) {
+            for (int i = 0; i < TAMANHO_NAVIO; i++) {
+                tabuleiro[navio3_linha_inicial + i][navio3_coluna_inicial + i] = NAVIO;
+            }
+        }
+    }
+
+    // --- Navio 4: Diagonal (linha aumenta, coluna diminui) ---
+    int navio4_linha_inicial = 7;
+    int navio4_coluna_inicial = 4;
+    espaco_livre = 1;
+
+    if (navio4_linha_inicial + TAMANHO_NAVIO <= TAMANHO_TABULEIRO && navio4_coluna_inicial - (TAMANHO_NAVIO - 1) >= 0) {
+        for (int i = 0; i < TAMANHO_NAVIO; i++) {
+            if (tabuleiro[navio4_linha_inicial + i][navio4_coluna_inicial - i] != AGUA) {
+                espaco_livre = 0;
+                break;
+            }
+        }
+        if (espaco_livre) {
+            for (int i = 0; i < TAMANHO_NAVIO; i++) {
+                tabuleiro[navio4_linha_inicial + i][navio4_coluna_inicial - i] = NAVIO;
+            }
+        }
+    }
+
+    // --- 3. Exiba o Tabuleiro ---
+    printf("\n--- TABULEIRO DE BATALHA NAVAL ---\n");
+    printf("   A B C D E F G H I J\n"); // << LINHA CORRIGIDA
+
+    
+    for (linha = 0; linha < TAMANHO_TABULEIRO; linha++) {
+        printf("%2d ", linha + 1); 
+
+        for (coluna = 0; coluna < TAMANHO_TABULEIRO; coluna++) {
             printf("%d ", tabuleiro[linha][coluna]);
         }
-
         printf("\n");
     }
 
