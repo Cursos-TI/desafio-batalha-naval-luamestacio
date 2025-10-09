@@ -1,16 +1,33 @@
 #include <stdio.h>
 
-int main() {
-    // Variáveis de configuração
-    int TAMANHO_TABULEIRO = 10;
-    int TAMANHO_NAVIO = 3;
-    int AGUA = 0;
-    int NAVIO = 3;
+// --- Constantes para configuração do jogo ---
+#define TAMANHO_TABULEIRO 10
+#define TAMANHO_HABILIDADE 5 
 
-    int tabuleiro[10][10];
+// --- Representação dos elementos no tabuleiro ---
+#define AGUA 0
+#define NAVIO 3
+#define AREA_AFETADA 5
+
+// --- Funções Auxiliares ---
+
+int valorAbsoluto(int n) {
+    if (n < 0) {
+        return -n; 
+    }
+    return n; 
+}
+
+
+void aplicarHabilidade(int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO], int habilidade[TAMANHO_HABILIDADE][TAMANHO_HABILIDADE], int origem_linha, int origem_coluna);
+
+
+int main() {
+    // --- 1. Definição do Tabuleiro e Variáveis ---
+    int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO];
     int linha, coluna;
 
-    // --- 1. Inicialize o Tabuleiro: Preenchendo com água ---
+    // --- 2. Inicialize o Tabuleiro: Preenchendo com água ---
     printf("Inicializando o tabuleiro...\n");
     for (linha = 0; linha < TAMANHO_TABULEIRO; linha++) {
         for (coluna = 0; coluna < TAMANHO_TABULEIRO; coluna++) {
@@ -18,98 +35,116 @@ int main() {
         }
     }
 
-    // --- 2. Posicione Quatro Navios (tamanho 3) ---
+    // --- 3. Posicione Quatro Navios (tamanho 3) ---
     printf("Posicionando os navios...\n");
+    for (int i = 0; i < 3; i++) tabuleiro[1][1 + i] = NAVIO;
+    for (int i = 0; i < 3; i++) tabuleiro[3 + i][8] = NAVIO;
+    for (int i = 0; i < 3; i++) tabuleiro[4 + i][1 + i] = NAVIO;
+    for (int i = 0; i < 3; i++) tabuleiro[6 + i][4 - i] = NAVIO;
 
-    // --- Navio 1: Horizontal ---
-    int navio1_linha = 1;
-    int navio1_coluna_inicial = 1;
-    int espaco_livre = 1; // 1 para 'true', 0 para 'false'
 
-    if (navio1_coluna_inicial + TAMANHO_NAVIO <= TAMANHO_TABULEIRO) {
-        for (int i = 0; i < TAMANHO_NAVIO; i++) {
-            if (tabuleiro[navio1_linha][navio1_coluna_inicial + i] != AGUA) {
-                espaco_livre = 0;
-                break;
-            }
-        }
-        if (espaco_livre) {
-            for (int i = 0; i < TAMANHO_NAVIO; i++) {
-                tabuleiro[navio1_linha][navio1_coluna_inicial + i] = NAVIO;
-            }
-        }
-    }
+    // --- 4. Criar Matrizes de Habilidade (5x5) ---
+    printf("Criando matrizes de habilidades...\n");
 
-    // --- Navio 2: Vertical ---
-    int navio2_linha_inicial = 3;
-    int navio2_coluna = 8;
-    espaco_livre = 1;
+    int habilidade_cone[TAMANHO_HABILIDADE][TAMANHO_HABILIDADE];
+    int habilidade_cruz[TAMANHO_HABILIDADE][TAMANHO_HABILIDADE];
+    int habilidade_octaedro[TAMANHO_HABILIDADE][TAMANHO_HABILIDADE];
 
-    if (navio2_linha_inicial + TAMANHO_NAVIO <= TAMANHO_TABULEIRO) {
-        for (int i = 0; i < TAMANHO_NAVIO; i++) {
-            if (tabuleiro[navio2_linha_inicial + i][navio2_coluna] != AGUA) {
-                espaco_livre = 0;
-                break;
-            }
-        }
-        if (espaco_livre) {
-            for (int i = 0; i < TAMANHO_NAVIO; i++) {
-                tabuleiro[navio2_linha_inicial + i][navio2_coluna] = NAVIO;
+    // --- Construção da Habilidade em Cone ---
+    for (linha = 0; linha < TAMANHO_HABILIDADE; linha++) {
+        for (coluna = 0; coluna < TAMANHO_HABILIDADE; coluna++) {
+            if (coluna >= (TAMANHO_HABILIDADE / 2) - linha && coluna <= (TAMANHO_HABILIDADE / 2) + linha) {
+                habilidade_cone[linha][coluna] = 1;
+            } else {
+                habilidade_cone[linha][coluna] = 0;
             }
         }
     }
 
-    // --- Navio 3: Diagonal (linha e coluna aumentam) ---
-    int navio3_linha_inicial = 4;
-    int navio3_coluna_inicial = 1;
-    espaco_livre = 1;
-
-    if (navio3_linha_inicial + TAMANHO_NAVIO <= TAMANHO_TABULEIRO && navio3_coluna_inicial + TAMANHO_NAVIO <= TAMANHO_TABULEIRO) {
-        for (int i = 0; i < TAMANHO_NAVIO; i++) {
-            if (tabuleiro[navio3_linha_inicial + i][navio3_coluna_inicial + i] != AGUA) {
-                espaco_livre = 0;
-                break;
-            }
-        }
-        if (espaco_livre) {
-            for (int i = 0; i < TAMANHO_NAVIO; i++) {
-                tabuleiro[navio3_linha_inicial + i][navio3_coluna_inicial + i] = NAVIO;
+    // --- Construção da Habilidade em Cruz ---
+    for (linha = 0; linha < TAMANHO_HABILIDADE; linha++) {
+        for (coluna = 0; coluna < TAMANHO_HABILIDADE; coluna++) {
+            if (linha == TAMANHO_HABILIDADE / 2 || coluna == TAMANHO_HABILIDADE / 2) {
+                habilidade_cruz[linha][coluna] = 1;
+            } else {
+                habilidade_cruz[linha][coluna] = 0;
             }
         }
     }
 
-    // --- Navio 4: Diagonal (linha aumenta, coluna diminui) ---
-    int navio4_linha_inicial = 7;
-    int navio4_coluna_inicial = 4;
-    espaco_livre = 1;
-
-    if (navio4_linha_inicial + TAMANHO_NAVIO <= TAMANHO_TABULEIRO && navio4_coluna_inicial - (TAMANHO_NAVIO - 1) >= 0) {
-        for (int i = 0; i < TAMANHO_NAVIO; i++) {
-            if (tabuleiro[navio4_linha_inicial + i][navio4_coluna_inicial - i] != AGUA) {
-                espaco_livre = 0;
-                break;
-            }
-        }
-        if (espaco_livre) {
-            for (int i = 0; i < TAMANHO_NAVIO; i++) {
-                tabuleiro[navio4_linha_inicial + i][navio4_coluna_inicial - i] = NAVIO;
+    // --- Construção da Habilidade em Octaedro (Forma de Losango/Diamante) ---
+    int centro = TAMANHO_HABILIDADE / 2;
+    for (linha = 0; linha < TAMANHO_HABILIDADE; linha++) {
+        for (coluna = 0; coluna < TAMANHO_HABILIDADE; coluna++) {
+            
+            if (valorAbsoluto(linha - centro) + valorAbsoluto(coluna - centro) <= centro) {
+                habilidade_octaedro[linha][coluna] = 1;
+            } else {
+                habilidade_octaedro[linha][coluna] = 0;
             }
         }
     }
 
-    // --- 3. Exiba o Tabuleiro ---
-    printf("\n--- TABULEIRO DE BATALHA NAVAL ---\n");
-    printf("   A B C D E F G H I J\n"); // << LINHA CORRIGIDA
+    // --- 5. Integrar Habilidades ao Tabuleiro ---
+    printf("Aplicando habilidades no tabuleiro...\n");
 
-    
+    int cone_origem_linha = 2;
+    int cone_origem_coluna = 5;
+    int cruz_origem_linha = 5;
+    int cruz_origem_coluna = 2;
+    int octaedro_origem_linha = 7;
+    int octaedro_origem_coluna = 7;
+
+    aplicarHabilidade(tabuleiro, habilidade_cone, cone_origem_linha, cone_origem_coluna);
+    aplicarHabilidade(tabuleiro, habilidade_cruz, cruz_origem_linha, cruz_origem_coluna);
+    aplicarHabilidade(tabuleiro, habilidade_octaedro, octaedro_origem_linha, octaedro_origem_coluna);
+
+
+    // --- 6. Exiba o Tabuleiro com Habilidade ---
+    printf("\n--- TABULEIRO FINAL COM HABILIDADES ---\n");
+    printf("Legenda: '~' Agua, 'N' Navio, '*' Area Afetada\n");
+    printf("    A B C D E F G H I J\n");
+    printf("   ---------------------\n");
+
     for (linha = 0; linha < TAMANHO_TABULEIRO; linha++) {
-        printf("%2d ", linha + 1); 
-
+        printf("%2d |", linha + 1);
         for (coluna = 0; coluna < TAMANHO_TABULEIRO; coluna++) {
-            printf("%d ", tabuleiro[linha][coluna]);
+            switch (tabuleiro[linha][coluna]) {
+                case AGUA:
+                    printf(" ~");
+                    break;
+                case NAVIO:
+                    printf(" N");
+                    break;
+                case AREA_AFETADA:
+                    printf(" *");
+                    break;
+                default:
+                    printf(" ?");
+                    break;
+            }
         }
         printf("\n");
     }
 
     return 0;
+}
+
+// Implementação da função aplicarHabilidade
+void aplicarHabilidade(int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO], int habilidade[TAMANHO_HABILIDADE][TAMANHO_HABILIDADE], int origem_linha, int origem_coluna) {
+    int centro_habilidade = TAMANHO_HABILIDADE / 2;
+    int linha_tabuleiro, coluna_tabuleiro;
+
+    for (int l_habilidade = 0; l_habilidade < TAMANHO_HABILIDADE; l_habilidade++) {
+        for (int c_habilidade = 0; c_habilidade < TAMANHO_HABILIDADE; c_habilidade++) {
+            if (habilidade[l_habilidade][c_habilidade] == 1) {
+                linha_tabuleiro = origem_linha + (l_habilidade - centro_habilidade);
+                coluna_tabuleiro = origem_coluna + (c_habilidade - centro_habilidade);
+                if (linha_tabuleiro >= 0 && linha_tabuleiro < TAMANHO_TABULEIRO &&
+                    coluna_tabuleiro >= 0 && coluna_tabuleiro < TAMANHO_TABULEIRO) {
+                    tabuleiro[linha_tabuleiro][coluna_tabuleiro] = AREA_AFETADA;
+                }
+            }
+        }
+    }
 }
